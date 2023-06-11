@@ -77,16 +77,48 @@ export default class News extends Component {
     super();
     this.state = {
       // articles: this.articles,
-      articles : [],
+      articles: [],
+      page: 1,
     };
   }
 
-  async componentDidMount(){
-    let url = "https://newsapi.org/v2/top-headlines?country=us&category=business&apiKey=49b19e5967df4a00828b1c058f6946bd";
+  async componentDidMount() {
+    let url =
+      "https://newsapi.org/v2/top-headlines?country=us&category=business&apiKey=49b19e5967df4a00828b1c058f6946bd&page=1&pageSize=15";
     let data = await fetch(url);
     let jsonParsedData = await data.json();
-    this.setState({articles:jsonParsedData.articles})
+    this.setState({
+      articles: jsonParsedData.articles,
+      totalArticles: jsonParsedData.totalResults,
+    });
   }
+
+  handleNextClick = async () => {
+    if (this.state.page + 1 > Math.ceil(this.state.totalArticles / 20)) {
+    } else {
+      let url = `https://newsapi.org/v2/top-headlines?country=us&category=business&apiKey=49b19e5967df4a00828b1c058f6946bd&page=${
+        this.state.page + 1
+      }&pageSize=15`;
+      let data = await fetch(url);
+      let jsonParsedData = await data.json();
+      this.setState({
+        articles: jsonParsedData.articles,
+        page: this.state.page + 1,
+      });
+    }
+  };
+
+  handlePrevClick = async () => {
+    let url = `https://newsapi.org/v2/top-headlines?country=us&category=business&apiKey=49b19e5967df4a00828b1c058f6946bd&page=${
+      this.state.page - 1
+    }&pageSize=15`;
+    let data = await fetch(url);
+    let jsonParsedData = await data.json();
+    this.setState({
+      articles: jsonParsedData.articles,
+      page: this.state.page - 1,
+    });
+  };
 
   render() {
     return (
@@ -97,14 +129,34 @@ export default class News extends Component {
             return (
               <div className="col-md-4 my-1" key={element.url}>
                 <NewsItems
-                  title={element.title ? element.title.slice(0,40) : ""}
-                  description={element.description ? element.description.slice(0,74) : ""}
+                  title={element.title ? element.title.slice(0, 40) : ""}
+                  description={
+                    element.description ? element.description.slice(0, 74) : ""
+                  }
                   imageUrl={element.urlToImage}
                   newsUrl={element.url}
                 />
               </div>
             );
           })}
+        </div>
+
+        <div className="container d-flex justify-content-between">
+          <button
+            type="button"
+            className="btn btn-warning"
+            onClick={this.handlePrevClick}
+            disabled={this.state.page <= 1}
+          >
+            {"<"}
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary mx-2"
+            onClick={this.handleNextClick}
+          >
+            {">"}
+          </button>
         </div>
       </div>
     );
